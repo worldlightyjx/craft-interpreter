@@ -1,5 +1,6 @@
 package com.craftinginterpreters.lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.craftinginterpreters.lox.TokenType.*;
@@ -15,12 +16,53 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    Expr parse() {
+
+
+    List<Stmt> parse(){
+        List<Stmt> statements = new ArrayList<>();
+        while (!isAtEnd()){
+            statements.add(declarations());
+        }
+        return statements;
+    }
+
+    private Stmt declarations() {
         try {
-            return expression();
-        } catch (ParserError error) {
+            if(match(VAR)) return varDeclaration();
+            return statement();
+        }catch (ParserError error){
+            synchronize();
             return null;
         }
+    }
+
+    private Stmt varDeclaration() {
+        Token name = consume(IDENTIFIER, "Expect variable name.");
+
+        Expr initializer = null;
+        if (match(EQUAL)){
+            initializer = expression();
+        }
+
+        consume(SEMICOLON, "Expect ';' after variable declaration");
+        return new Stmt.Var(name,initializer);
+    }
+
+    private Stmt statement() {
+        if(match(PRINT)) return printStatement();
+        return expressionStatement();
+    }
+
+    private Stmt expressionStatement() {
+        Expr expr = expression();
+        consume(SEMICOLON,"Expect ';' after an expression");
+        return new Stmt.Expression(expr);
+    }
+
+    private Stmt printStatement() {
+        Expr value = expression();
+        consume(SEMICOLON,"Expect ';' after a value");
+        return new Stmt.Print(value);
     }
 
 
@@ -95,6 +137,9 @@ public class Parser {
             return new Expr.Literal(previous().literal);
         }
 
+        if(match(IDENTIFIER)){
+            return new Expr.Variable(previous());
+        }
         if (match(LEFT_PAREN)) {
             Expr expr = expression();
             consume(RIGHT_PAREN, "Expect ')' after expression");

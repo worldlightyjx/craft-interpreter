@@ -1,18 +1,25 @@
 package com.craftinginterpreters.lox;
 
+import java.util.List;
+
 /**
  * @author yangjiaxin
  * @date 2022/10/19 11:36
  */
-public class Interpreter implements Expr.Visitor<Object> {
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
-    void interpreter(Expr expression) {
+    void interpreter(List<Stmt> statements) {
         try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for(Stmt statement : statements){
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Lox.runTimeError(error);
         }
+    }
+
+    private void execute(Stmt statement) {
+        statement.accept(this);
     }
 
     private String stringify(Object value) {
@@ -44,7 +51,7 @@ public class Interpreter implements Expr.Visitor<Object> {
 
         switch (expr.operator.type) {
             case MINUS:
-                checkNumberOperands(expr.operator,left,right);
+                checkNumberOperands(expr.operator, left, right);
                 return (double) left - (double) right;
             case PLUS:
                 if (left instanceof Double && right instanceof Double) {
@@ -56,22 +63,22 @@ public class Interpreter implements Expr.Visitor<Object> {
                 }
                 throw new RuntimeError(expr.operator, "Operands mus be two numbers or two strings");
             case SLASH:
-                checkNumberOperands(expr.operator,left,right);
+                checkNumberOperands(expr.operator, left, right);
                 return (double) left / (double) right;
             case STAR:
-                checkNumberOperands(expr.operator,left,right);
+                checkNumberOperands(expr.operator, left, right);
                 return (double) left * (double) right;
             case GREATER:
-                checkNumberOperands(expr.operator,left,right);
+                checkNumberOperands(expr.operator, left, right);
                 return (double) left > (double) right;
             case GREATER_EQUAL:
-                checkNumberOperands(expr.operator,left,right);
+                checkNumberOperands(expr.operator, left, right);
                 return (double) left >= (double) right;
             case LESS:
-                checkNumberOperands(expr.operator,left,right);
+                checkNumberOperands(expr.operator, left, right);
                 return (double) left < (double) right;
             case LESS_EQUAL:
-                checkNumberOperands(expr.operator,left,right);
+                checkNumberOperands(expr.operator, left, right);
                 return (double) left <= (double) right;
             case BANG_EQUAL:
                 return !isEqual(left, right);
@@ -120,6 +127,19 @@ public class Interpreter implements Expr.Visitor<Object> {
 
     private Object evaluate(Expr expr) {
         return expr.accept(this);
+    }
+
+    @Override
+    public Void visitExpressionStmt(Stmt.Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        Object val = evaluate(stmt.expression);
+        System.out.println(stringify(val));
+        return null;
     }
 }
 
