@@ -67,7 +67,11 @@ public class Parser {
 
 
     private Expr expression() {
-        return equality();
+        return assignment();
+    }
+
+    private Expr assignment() {
+
     }
 
     private Expr equality() {
