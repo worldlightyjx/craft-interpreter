@@ -25,6 +25,7 @@ public class GenerateAst {
         defineAst(outputDir,"Stmt", Arrays.asList(
                 "Block: List<Stmt> statements",
                 "Expression: Expr expression",
+                "If: Expr condition, Stmt thenBranch, Stmt elseBranch",
                 "Print: Expr expression",
                 "Var: Token name, Expr initializer"
         ));
@@ -78,7 +79,7 @@ public class GenerateAst {
 
         for(String field : fields){
             String name = field.split(" ")[1];
-            writer.println("    this."+name+" = "+name+";");
+            writer.println("        this."+name+" = "+name+";");
         }
 
         writer.println("    }");

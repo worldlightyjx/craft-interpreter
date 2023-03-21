@@ -9,8 +9,10 @@ echo 'generate AST'
 
 cd ../../
 
-dir="pwd"
+dir="$(pwd)"
 
 echo "now in dir: $dir"
 
+
 java  com/tool/GenerateAst "com/craftinginterpreters/lox"
+
